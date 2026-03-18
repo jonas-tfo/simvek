@@ -1,7 +1,7 @@
 
 use std::path::Path;
 use anyhow::Ok;
-use anyhow::Result;
+use anyhow::{Result, Context};
 use crate::types::Storage;
 use crate::types::FastaRecord;
 
@@ -43,6 +43,22 @@ impl Storage {
         Ok(())
     }
 
+    pub fn iter(&self) -> impl Iterator<Item = Result<(u64, FastaRecord)>> + '_ {
+        self.records.iter().map(|item| {
+            let (key, value) = item.context("failed to read from sled")?;
+
+            let internal_id = u64::from_be_bytes(
+                key.as_ref()
+                    .try_into()
+                    .context("failed to convert key to u64")?
+            );
+
+            let record: FastaRecord = bincode::deserialize(&value)
+                .context("failed to deserialize record")?;
+
+            Ok((internal_id, record))
+        })
+    }
     pub fn flush(&self) -> Result<usize> {
         let written = self.db.flush()?;
         Ok(written)

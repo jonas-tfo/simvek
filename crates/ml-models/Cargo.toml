@@ -5,3 +5,7 @@ edition = "2021"
 
 [dependencies]
 core-engine = { path = "../core-engine" }
+anyhow = "1"
+ort = "=2.0.0-rc.12"
+bincode = "1"
+serde = { version = "1", features = ["derive"] }
