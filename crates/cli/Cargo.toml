@@ -6,3 +6,4 @@ edition = "2021"
 [dependencies]
 core-engine = { path = "../core-engine" }
 ml-models = { path = "../ml-models" }
+anyhow = "1"
