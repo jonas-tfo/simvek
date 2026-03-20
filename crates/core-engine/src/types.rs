@@ -1,5 +1,5 @@
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use serde::{Serialize, Deserialize};
 use hnsw_rs::prelude::{Hnsw, DistL2};
 use anyhow::Result;
@@ -40,7 +40,7 @@ pub struct Storage {
 }
 
 pub struct VectorDBConfig {
-    pub path: Box<Path>,
+    pub path: PathBuf,
     pub ef_construction: usize,  // build accuracy
     pub max_nb_connection: usize,// graph connectivity
     pub expected_size: usize,    // rough upper bound number of sequences

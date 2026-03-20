@@ -1,8 +1,23 @@
 
 use anyhow::{Context, Ok, Result};
+use std::path::PathBuf;
 use hnsw_rs::hnsw::Neighbour;
 use hnsw_rs::prelude::{Hnsw, DistL2};
 use crate::types::{Storage, FastaRecord, HnswSearchQuery, SequenceEmbedder, VectorDB, VectorDBConfig};
+
+
+impl VectorDBConfig {
+    pub fn default(path: PathBuf) -> Self {
+        Self {
+            path,
+            ef_construction: 200,
+            max_nb_connection: 16,
+            expected_size: 100_000,
+            ef_search: 50,
+            max_layers: 16,
+        }
+    }
+}
 
 impl VectorDB {
 
