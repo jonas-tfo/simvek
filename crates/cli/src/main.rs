@@ -1,6 +1,6 @@
 use ml_models::python_embedder::PythonEmbedder;
-use core_engine::types::VectorDBConfig;
-use core_engine::types::VectorDB;
+use core_db::types::VectorDBConfig;
+use core_db::types::VectorDB;
 use std::path::PathBuf;
 
 fn main() -> anyhow::Result<()> {
@@ -12,11 +12,11 @@ fn main() -> anyhow::Result<()> {
 
     let config = VectorDBConfig::default(PathBuf::from("data/db"));
 
-    let db = VectorDB::open(config, Box::new(embedder))?;
+    let db = VectorDB::open(config, Box::new(embedder as PythonEmbedder))?;
 
     // test search
     let query = b"MKTAYIAKQRQISFVKSHFSRQ";
-    let results = db.search(core_engine::types::HnswSearchQuery {
+    let results = db.search(core_db::types::HnswSearchQuery {
         data: query,
         knn: 5,
         search_width: 50,

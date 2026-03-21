@@ -4,6 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-core-engine = { path = "../core-engine" }
+core-db = { path = "../core-db" }
 ml-models = { path = "../ml-models" }
 anyhow = "1"
