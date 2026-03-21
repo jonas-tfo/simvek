@@ -168,7 +168,7 @@ name = "cli"
 version = "0.1.0"
 dependencies = [
  "anyhow",
- "core-engine",
+ "core-db",
  "ml-models",
 ]
 
@@ -189,7 +189,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "core-engine"
+name = "core-db"
 version = "0.1.0"
 dependencies = [
  "anyhow",
@@ -619,7 +619,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "bincode",
- "core-engine",
+ "core-db",
  "ort",
  "serde",
  "serde_json",

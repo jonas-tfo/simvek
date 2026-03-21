@@ -1,5 +1,5 @@
 
-use std::path::{Path, PathBuf};
+use std::path::{PathBuf};
 use serde::{Serialize, Deserialize};
 use hnsw_rs::prelude::{Hnsw, DistL2};
 use anyhow::Result;

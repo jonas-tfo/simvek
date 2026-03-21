@@ -1,7 +1,7 @@
 
 #[cfg(test)]
 mod tests {
-    use core_engine::types::{FastaRecord, SeqType, Storage};
+    use core_db::types::{FastaRecord, SeqType, Storage};
     use tempfile::tempdir;
 
     #[test]
