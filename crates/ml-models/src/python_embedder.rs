@@ -2,6 +2,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 use anyhow::{Context, Result, bail};
 use core_db::types::{ModelSignature, SequenceEmbedder};
+use rand::seq::SliceRandom;
 
 pub struct PythonEmbedder {
     script_path: PathBuf,
@@ -20,6 +21,7 @@ impl PythonEmbedder {
 }
 
 impl SequenceEmbedder for PythonEmbedder {
+
     fn embed(&self, sequence: &[u8]) -> Result<Vec<f32>> {
         let sequence_str = std::str::from_utf8(sequence)
             .context("sequence is not valid utf-8")?;
@@ -29,7 +31,7 @@ impl SequenceEmbedder for PythonEmbedder {
             .arg("--sequence").arg(sequence_str)
             .arg("--model").arg(&self.model_name)
             .output()
-            .context("failed to run python embedder — is python3 in PATH?")?;
+            .context("failed to run python embedder")?;
 
         if !output.status.success() {
             let stderr = String::from_utf8_lossy(&output.stderr);
@@ -51,6 +53,13 @@ impl SequenceEmbedder for PythonEmbedder {
         }
 
         Ok(embedding)
+    }
+    fn embed_dev(&self, sequence: &[u8])-> Result<Vec<f32>> {
+        let mut rng = rand::rng();
+        let mut nums: Vec<f32> = (0..1024).map(|i| i as f32).collect();
+        nums.shuffle(&mut rng);
+
+        Ok(nums)
     }
 
     fn embed_batch(&self, sequences: &[&[u8]]) -> Result<Vec<Vec<f32>>> {
