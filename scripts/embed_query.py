@@ -9,12 +9,12 @@ MODEL_NAME = "Rostlab/prot_t5_xl_half_uniref50-enc"
 def embed_sequence(sequence: str, tokenizer, encoder, device: str) -> list[float]:
     # mean pool over residues to get a single vector per sequence
     seq_spaced = " ".join(list(sequence))
-    
+
     tokenized = tokenizer(
-        seq_spaced, 
-        return_tensors="pt", 
-        padding=True, 
-        truncation=True, 
+        seq_spaced,
+        return_tensors="pt",
+        padding=True,
+        truncation=True,
         max_length=512
     )
     input_ids = tokenized["input_ids"].to(device)
