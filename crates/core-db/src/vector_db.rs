@@ -48,6 +48,29 @@ impl VectorDB {
         Ok(db)
     }
 
+    pub fn open_fresh(config: VectorDBConfig, embedder: Box<dyn SequenceEmbedder>) -> Result<Self> {
+        let sled_storage = Storage::open(&config.path)
+            .context("failed to open sled storage")?;
+        sled_storage.clear()?;
+        // make new hnsw db
+        let hnsw_storage = Hnsw::new(
+            config.max_nb_connection,
+            config.expected_size,
+            config.max_layers,
+            config.ef_construction,
+            DistL2::default(),
+        );
+
+        let db = Self {
+            sled_storage,
+            hnsw_storage,
+            embedder,
+            config,
+        };
+        Ok(db)
+    }
+
+
     /// fill database from a fasta file
     fn rebuild_index_from_fasta(&mut self, fasta: &str) -> Result<()> {
         let (ids, seqs, seq_type) = parse_fasta(fasta)?;

@@ -72,6 +72,13 @@ impl Storage {
             Ok((internal_id, record))
         })
     }
+    pub fn clear(&self) -> Result<()> {
+        self.dna_records.clear()?;
+        self.rna_records.clear()?;
+        self.protein_records.clear()?;
+        Ok(())
+    }
+
     pub fn flush(&self) -> Result<usize> {
         let written = self.db.flush()?;
         Ok(written)
