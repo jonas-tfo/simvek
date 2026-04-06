@@ -7,3 +7,4 @@ edition = "2021"
 core-db = { path = "../core-db" }
 ml-models = { path = "../ml-models" }
 anyhow = "1"
+clap = { version = "4.6.0", features = ["derive"] }
