@@ -30,7 +30,7 @@ impl SequenceEmbedder for DevEmbedder {
 fn make_vector_db() -> VectorDB {
     let dir = tempdir().unwrap();
     let path = dir.keep();
-    VectorDB::open(VectorDBConfig::default(path), Box::new(DevEmbedder)).unwrap()
+    VectorDB::open(VectorDBConfig::default(path, SeqType::Protein), Box::new(DevEmbedder)).unwrap()
 }
 
 fn make_record(header: &str, seq: &[u8]) -> FastaRecord {

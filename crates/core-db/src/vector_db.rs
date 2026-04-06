@@ -9,7 +9,7 @@ use crate::fileutils::parse_fasta;
 
 
 impl VectorDBConfig {
-    pub fn default(path: PathBuf) -> Self {
+    pub fn default(path: PathBuf, record_type: SeqType) -> Self {
         Self {
             path,
             ef_construction: 200,
@@ -17,7 +17,17 @@ impl VectorDBConfig {
             expected_size: 100_000,
             ef_search: 50,
             max_layers: 16,
-            record_type: SeqType::Protein
+            record_type: record_type
+        }
+    }
+}
+
+impl<'a> HnswSearchQuery<'a> {
+    pub fn default(vec: &'a [u8]) -> Self {
+        Self {
+            data: vec,
+            knn: 5,
+            search_width: 10,
         }
     }
 }
@@ -93,7 +103,7 @@ impl VectorDB {
                 let (internal_id, record) = entry
                     .context("failed to read record during index rebuild")?;
 
-                let embedding = self.embedder.embed_dev(&record.sequence)
+                let embedding = self.embedder.embed(&record.sequence)
                     .context("failed to embed sequence during rebuild")?;
 
                 self.hnsw_storage.insert((&embedding, internal_id as usize));
@@ -108,7 +118,7 @@ impl VectorDB {
 
     /// store in sled, embed sequence, store in vector db
     pub fn insert(&mut self, record: FastaRecord) -> Result<u64> {
-        let embedding: Vec<f32> = self.embedder.embed_dev(&record.sequence).context("Failed to embed the sequence")?;
+        let embedding: Vec<f32> = self.embedder.embed(&record.sequence).context("Failed to embed the sequence")?;
         let internal_id = self.sled_storage.insert(&record).context("Failed to insert record into db")?;
         self.hnsw_storage.insert((&embedding, internal_id as usize));
         Ok(internal_id)
@@ -120,7 +130,7 @@ impl VectorDB {
 
     /// get kNN and give nearest records and their l2 distance to query
     pub fn search(&self, query: HnswSearchQuery) -> Result<Vec<Neighbour>> {
-        let embedding: Vec<f32> = self.embedder.embed_dev(&query.data)
+        let embedding: Vec<f32> = self.embedder.embed(&query.data)
             .context("Failed to embed the sequence")?;
         let neighbours: Vec<Neighbour> = self.hnsw_storage.search(&embedding, query.knn, query.search_width);
         Ok(neighbours)
