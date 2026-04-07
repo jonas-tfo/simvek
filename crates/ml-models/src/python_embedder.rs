@@ -54,7 +54,7 @@ impl SequenceEmbedder for PythonEmbedder {
 
         Ok(embedding)
     }
-    fn embed_dev(&self, sequence: &[u8])-> Result<Vec<f32>> {
+    fn embed_dev(&self, _sequence: &[u8])-> Result<Vec<f32>> {
         let mut rng = rand::rng();
         let mut nums: Vec<f32> = (0..1024).map(|i| i as f32).collect();
         nums.shuffle(&mut rng);
