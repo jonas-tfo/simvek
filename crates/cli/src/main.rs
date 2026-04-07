@@ -1,7 +1,8 @@
 use clap::{Parser, Subcommand};
-use std::{path::PathBuf, str::FromStr};
-use core_db::{HnswSearchQuery, SeqType, SequenceEmbedder, VectorDB, VectorDBConfig, types::str2seqtype};
+use std::{path::PathBuf, time::Duration};
+use core_db::{HnswSearchQuery, SeqType, VectorDB, VectorDBConfig, types::str2seqtype};
 use ml_models::python_embedder::PythonEmbedder;
+use indicatif::{ProgressBar, ProgressStyle};
 
 #[derive(Subcommand)]
 enum Command {
@@ -78,7 +79,12 @@ fn main() {
                 false => VectorDB::open(conf, Box::new(embedder)).unwrap(),
             };
             let fast = PathBuf::from(&fasta);
+            let spinner = ProgressBar::new_spinner();
+            spinner.set_style(ProgressStyle::default_spinner().template("{spinner:.green} {msg}").unwrap());
+            spinner.set_message(format!("Embedding sequences from {} ...", fasta));
+            spinner.enable_steady_tick(Duration::from_millis(100));
             VectorDB::rebuild_index_from_fasta_batch(&mut db, &fast).unwrap();
+            spinner.finish_with_message("Done.");
         },
         Command::Query { query, record_type, top_k, db_path, output, ef_construction, ef_search, model, dim } => {
             let seq_type = str2seqtype(&record_type).unwrap();
@@ -96,6 +102,10 @@ fn main() {
                 &model,
                 dim as usize
             ));
+            let spinner = ProgressBar::new_spinner();
+            spinner.set_style(ProgressStyle::default_spinner().template("{spinner:.green} {msg}").unwrap());
+            spinner.set_message(format!("Embedding sled database sequences for rebuilding of vector data base..."));
+            spinner.enable_steady_tick(Duration::from_millis(100));
             let db = VectorDB::open(conf, embedder).unwrap();
             let query_bytes = query.into_bytes();
             let search_query = HnswSearchQuery {
@@ -103,7 +113,9 @@ fn main() {
                 knn: top_k,
                 search_width: ef_search
             };
+            spinner.set_message(format!("Embedding query and getting {} nearest neighbours", top_k));
             let neighbours = db.search(search_query).unwrap();
+            spinner.finish_with_message("Done");
             match output.as_str() {
                 "plain" => {
                     for n in neighbours {
@@ -126,10 +138,16 @@ fn main() {
                 },
                 "json" => {
                   let output: Vec<serde_json::Value> = neighbours.iter()
-                      .map(|n| serde_json::json!({
-                          "id": n.d_id,
-                          "distance": n.distance
-                      }))
+                      .map(|n| {
+                          let id = n.get_origin_id() as u64;
+                          let seq = db.sled_storage.get(id, SeqType::Protein).unwrap()
+                              .map(|r| String::from_utf8_lossy(&r.sequence).into_owned());
+                          serde_json::json!({
+                              "id": n.d_id,
+                              "distance": n.distance,
+                              "sequence": seq,
+                          })
+                      })
                       .collect();
                   println!("{}", serde_json::to_string_pretty(&output).unwrap());
                 },
