@@ -14,7 +14,7 @@ pub struct ModelSignature {
 pub trait SequenceEmbedder {
     fn embed(&self, sequence: &[u8]) -> Result<Vec<f32>>;
     fn embed_dev(&self, sequence: &[u8]) -> Result<Vec<f32>>;
-    fn embed_batch(&self, sequences: &[&[u8]]) -> Result<Vec<Vec<f32>>>;
+    fn embed_batch(&self, sequences: &PathBuf) -> Result<Vec<Vec<f32>>>;
     fn get_dimension(&self) -> usize;
     fn get_signature(&self) -> ModelSignature;
 }
@@ -25,6 +25,15 @@ pub enum SeqType {
     Dna,
     Rna,
     Protein,
+}
+
+pub fn str2seqtype(input: &str) -> Result<SeqType> {
+    match input {
+        "dna" => Ok(SeqType::Dna),
+        "rna" => Ok(SeqType::Rna),
+        "protein" => Ok(SeqType::Protein),
+        _ => Err(anyhow::anyhow!("Invalid sequence type {}", input))
+    }
 }
 
 /// record for the sled storage

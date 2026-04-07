@@ -80,9 +80,8 @@ impl VectorDB {
         Ok(db)
     }
 
-
     /// fill database from a fasta file
-    fn rebuild_index_from_fasta(&mut self, fasta: &str) -> Result<()> {
+    pub fn rebuild_index_from_fasta(&mut self, fasta: &PathBuf) -> Result<()> {
         let (ids, seqs, seq_type) = parse_fasta(fasta)?;
         for (id, seq) in ids.iter().zip(seqs.iter()) {
             let record = FastaRecord {
@@ -94,6 +93,12 @@ impl VectorDB {
         }
         Ok(())
     }
+
+    pub fn rebuild_index_from_fasta_batch(&mut self, fasta: &PathBuf) -> Result<()> {
+        self.insert_batch(fasta)?;
+        Ok(())
+    }
+
 
     /// embed all sequences in given sled db
     fn rebuild_index(&mut self) -> Result<()> {
@@ -124,8 +129,21 @@ impl VectorDB {
         Ok(internal_id)
     }
 
-    pub fn insert_batch(&mut self, records: Vec<FastaRecord>) -> Result<Vec<u64>> {
-        todo!()
+    pub fn insert_batch(&mut self, fasta: &PathBuf) -> Result<Vec<u64>> {
+        let (ids, seqs, seq_type) = parse_fasta(&fasta)?;
+        let embeddings: Vec<Vec<f32>> = self.embedder.embed_batch(&fasta)?;
+        let mut internal_ids: Vec<u64> = Vec::with_capacity(ids.len());
+        for ((id, seq), embedding) in ids.into_iter().zip(seqs).zip(embeddings) {
+            let record = FastaRecord {
+                header: id,
+                sequence: seq.into_bytes(),
+                seq_type: seq_type
+            };
+            let internal_id = self.sled_storage.insert(&record).context("Failed to insert record")?;
+            self.hnsw_storage.insert((embedding.as_slice(), internal_id as usize));
+            internal_ids.push(internal_id);
+        }
+        Ok(internal_ids)
     }
 
     /// get kNN and give nearest records and their l2 distance to query
