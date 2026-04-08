@@ -116,6 +116,14 @@ impl HnswDB {
         Ok(())
     }
 
+    /// store in sled with a pre-computed embedding (skips re-embedding)
+    pub fn insert_with_embedding(&mut self, record: FastaRecord, embedding: Vec<f32>) -> Result<u64> {
+        let internal_id = self.sequence_db.insert(&record).context("Failed to insert record into sequence db")?;
+        self.vector_db.insert_embedding(internal_id, &embedding).context("Failed to store embedding in vector db")?;
+        self.hnsw_storage.insert((&embedding, internal_id as usize));
+        Ok(internal_id)
+    }
+
     /// store in sled, embed sequence, store embedding in vector db
     pub fn insert(&mut self, record: FastaRecord) -> Result<u64> {
         let embedding: Vec<f32> = self.embedder.embed(&record.sequence).context("Failed to embed the sequence")?;

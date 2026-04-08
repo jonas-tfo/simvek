@@ -11,6 +11,7 @@ pub struct ModelSignature {
     pub dimension: usize,
 }
 
+/// generic embedder implemented for python embedder
 pub trait SequenceEmbedder {
     fn embed(&self, sequence: &[u8]) -> Result<Vec<f32>>;
     fn embed_dev(&self, sequence: &[u8]) -> Result<Vec<f32>>;
@@ -20,7 +21,7 @@ pub trait SequenceEmbedder {
 }
 
 
-#[derive(Serialize, Deserialize, Debug, Clone, Copy)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq)]
 pub enum SeqType {
     Dna,
     Rna,
@@ -33,6 +34,14 @@ pub fn str2seqtype(input: &str) -> Result<SeqType> {
         "rna" => Ok(SeqType::Rna),
         "protein" => Ok(SeqType::Protein),
         _ => Err(anyhow::anyhow!("Invalid sequence type {}", input))
+    }
+}
+
+pub fn seqtype2str(input: SeqType) -> Result<String> {
+    match input {
+        SeqType::Dna => Ok(String::from("dna")),
+        SeqType::Rna => Ok(String::from("rna")),
+        SeqType::Protein => Ok(String::from("protein")),
     }
 }
 
