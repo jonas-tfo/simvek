@@ -1,4 +1,4 @@
-pub mod sequence_db;
+pub mod sled_db;
 pub mod hnsw_db;
 pub mod types;
 pub mod fileutils;

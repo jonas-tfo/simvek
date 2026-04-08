@@ -44,15 +44,17 @@ pub struct FastaRecord {
     pub seq_type: SeqType,
 }
 
-pub struct Storage {
+pub struct SledDB {
     pub db: sled::Db,
-    pub dna_records: sled::Tree,  // tree for FastaRecord entries
+    pub dna_records: sled::Tree,  // tree for FastaRecord sequence entries
     pub rna_records: sled::Tree,
     pub protein_records: sled::Tree,
+    pub embeddings: sled::Tree,   // tree for f32 embedding vectors keyed by internal_id
 }
 
 pub struct HnswDBConfig {
-    pub path: PathBuf,
+    pub sequence_sled_data_path: PathBuf,
+    pub vector_sled_data_path: PathBuf,
     pub ef_construction: usize,  // build accuracy
     pub max_nb_connection: usize,// graph connectivity
     pub expected_size: usize,    // rough upper bound number of sequences
@@ -62,7 +64,8 @@ pub struct HnswDBConfig {
 }
 
 pub struct HnswDB {
-    pub sled_storage: Storage,
+    pub sequence_db: SledDB,
+    pub vector_db: SledDB,
     pub hnsw_storage: Hnsw<'static, f32, DistL2>,
     pub embedder: Box<dyn SequenceEmbedder>,
     pub config: HnswDBConfig
