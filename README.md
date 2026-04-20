@@ -25,7 +25,9 @@ Embeddings and sequences are persisted in [sled](https://github.com/spacejam/sle
 - Python $>=$ 3.13
 - uv
 
-For setup, run `uv sync` and make python3 is in `$PATH`. This is needed for the embedding script.
+For setup (before running)
+- run `uv sync` to download needed python packages
+- make sure the environment is activated with `source .venv/bin/activate` (zsh/bash) or `source .venv/bin/activate.fish` (fish)
 
 ## Usage
 
